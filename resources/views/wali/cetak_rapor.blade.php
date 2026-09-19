@@ -29,6 +29,9 @@
         $nama_kepsek = $is_sma ? 'Marnis, S.Pd.' : 'Khodijah, S.Pd.I';
         $nama_instansi = $is_sma ? 'SEKOLAH MENENGAH ATAS (SMA)' : 'SEKOLAH MENENGAH KEJURUAN (SMK)';
         $nama_sekolah_singkat = $is_sma ? 'SMA' : 'SMK';
+
+        // CEK APAKAH INI STS (Tengah Semester) ATAU BUKAN
+        $is_sts_rapor = strpos(strtolower($jenis_ujian->nama_jenis ?? ''), 'tengah semester') !== false;
     @endphp
 
     <div class="no-print text-center mb-3">
@@ -72,8 +75,11 @@
                     <tr>
                         <th width="5%">NO</th>
                         <th width="35%">Mata Pelajaran</th>
-                        <th width="10%">Nilai Akhir</th>
-                        <th width="50%">Capaian Kompetensi</th>
+                        <th width="10%">{{ $is_sts_rapor ? 'Nilai' : 'Nilai Akhir' }}</th>
+                        
+                        @if(!$is_sts_rapor)
+                            <th width="50%">Capaian Kompetensi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -106,7 +112,9 @@
 
                     <!-- KELOMPOK MATA PELAJARAN UMUM -->
                     @if($kelompokUmum->count() > 0)
-                        <tr class="bg-group"><td colspan="4">Kelompok Mata Pelajaran Umum</td></tr>
+                        <tr class="bg-group">
+                            <td colspan="{{ $is_sts_rapor ? 3 : 4 }}">Kelompok Mata Pelajaran Umum</td>
+                        </tr>
                         @php $no = 1; @endphp
                         @foreach($kelompokUmum as $mapel)
                             @php
@@ -115,27 +123,42 @@
                             <tr>
                                 <td class="text-center">{{ $no++ }}</td>
                                 <td class="fw-semibold">{{ ucwords(strtolower($mapel->nama_mapel)) }}</td>
-                                <td class="text-center fw-bold fs-6 {{ !$nilai ? 'text-danger' : '' }}">{{ $nilai->nilai_akhir ?? '-' }}</td>
-                                <td style="font-size: 0.8rem; padding: 6px;">
-                                    {{ $nilai ? 'Menunjukkan penguasaan yang baik dalam kompetensi ' . strtolower($mapel->nama_mapel) . '.' : 'Belum dinilai' }}
+                                
+                                <td class="text-center fw-bold fs-6 {{ !$nilai ? 'text-danger' : '' }}">
+                                    <!-- Jika STS, cetak nilai ujian murni. Jika tidak, cetak nilai akhir rapor -->
+                                    {{ $nilai ? ($is_sts_rapor ? $nilai->nilai_ujian : $nilai->nilai_akhir) : '-' }}
                                 </td>
+                                
+                                @if(!$is_sts_rapor)
+                                    <td style="font-size: 0.8rem; padding: 6px;">
+                                        {{ $nilai ? 'Menunjukkan penguasaan yang baik dalam kompetensi ' . strtolower($mapel->nama_mapel) . '.' : 'Belum dinilai' }}
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     @endif
 
                     <!-- KELOMPOK MATA PELAJARAN KEJURUAN / PEMINATAN -->
                     @if($kelompokKejuruan->count() > 0)
-                        <tr class="bg-group"><td colspan="4">Kelompok Mata Pelajaran Kejuruan / Peminatan</td></tr>
+                        <tr class="bg-group">
+                            <td colspan="{{ $is_sts_rapor ? 3 : 4 }}">Kelompok Mata Pelajaran Kejuruan / Peminatan</td>
+                        </tr>
                         @php $no = 1; @endphp
                         @foreach($kelompokKejuruan as $mapel)
                             @php $nilai = $data_nilai->firstWhere('mapel_id', $mapel->id); @endphp
                             <tr>
                                 <td class="text-center">{{ $no++ }}</td>
                                 <td class="fw-semibold">{{ ucwords(strtolower($mapel->nama_mapel)) }}</td>
-                                <td class="text-center fw-bold fs-6 {{ !$nilai ? 'text-danger' : '' }}">{{ $nilai->nilai_akhir ?? '-' }}</td>
-                                <td style="font-size: 0.8rem; padding: 6px;">
-                                    {{ $nilai ? 'Menunjukkan penguasaan yang baik dalam kompetensi ' . strtolower($mapel->nama_mapel) . '.' : 'Belum dinilai' }}
+                                
+                                <td class="text-center fw-bold fs-6 {{ !$nilai ? 'text-danger' : '' }}">
+                                    {{ $nilai ? ($is_sts_rapor ? $nilai->nilai_ujian : $nilai->nilai_akhir) : '-' }}
                                 </td>
+                                
+                                @if(!$is_sts_rapor)
+                                    <td style="font-size: 0.8rem; padding: 6px;">
+                                        {{ $nilai ? 'Menunjukkan penguasaan yang baik dalam kompetensi ' . strtolower($mapel->nama_mapel) . '.' : 'Belum dinilai' }}
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     @endif

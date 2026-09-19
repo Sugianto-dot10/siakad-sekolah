@@ -179,7 +179,7 @@
                 <div class="modal-body row g-3">
                     <div class="col-md-6">
                         <label class="fw-bold">Mata Pelajaran <span class="text-danger">*</span></label>
-                        <select name="mapel_id" class="form-select" required>
+                        <select name="mapel_id" id="tambah_mapel" class="form-select" required>
                             <option value="">-- Pilih Mata Pelajaran --</option>
                             @foreach($data_mapel as $mapel)
                                 <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
@@ -188,25 +188,16 @@
                     </div>
                     <div class="col-md-6">
                         <label class="fw-bold">Guru Pengawas <span class="text-danger">*</span></label>
-                        <select name="guru_id" class="form-select" required>
-                            <option value="">-- Pilih Guru Pengawas --</option>
-                            @foreach($data_guru as $guru)
-                                <option value="{{ $guru->id }}">{{ $guru->nama }}</option>
-                            @endforeach
+                        <select name="guru_id" id="tambah_guru" class="form-select" required>
+                            <option value="">-- Pilih Mapel Terlebih Dahulu --</option>
+                            <!-- Opsi guru akan diisi otomatis oleh AJAX -->
                         </select>
                     </div>
-                    
+
                     <div class="col-12">
                         <label class="fw-bold text-primary">Pilih Kelas Peserta <span class="text-danger">*</span></label>
-                        <div class="row border p-3 rounded bg-light mx-0" style="max-height: 150px; overflow-y: auto;">
-                            @foreach($data_kelas as $kelas)
-                            <div class="col-md-4 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="kelas_id[]" value="{{ $kelas->id }}" id="tambah_kelas_{{ $kelas->id }}">
-                                    <label class="form-check-label" for="tambah_kelas_{{ $kelas->id }}">{{ $kelas->nama_kelas }}</label>
-                                </div>
-                            </div>
-                            @endforeach
+                        <div class="row border p-3 rounded bg-light mx-0" style="max-height: 150px; overflow-y: auto;" id="container_kelas">
+                            <div class="col-12 text-muted small text-center">Silakan pilih Mata Pelajaran dan Guru terlebih dahulu.</div>
                         </div>
                     </div>
 
@@ -274,6 +265,72 @@
             },
             "pageLength": 10
         });
+    });
+
+    // 1. Saat Mapel dipilih -> Cari Guru
+    $('#tambah_mapel').on('change', function() {
+        let mapel_id = $(this).val();
+        let guruSelect = $('#tambah_guru');
+        let kelasContainer = $('#container_kelas');
+
+        guruSelect.html('<option value="">-- Memuat Guru... --</option>');
+        kelasContainer.html('<div class="col-12 text-muted small text-center">Silakan pilih Mata Pelajaran dan Guru terlebih dahulu.</div>');
+
+        if(mapel_id) {
+            $.ajax({
+                url: "{{ route('jadwal.get_guru') }}",
+                type: "GET",
+                data: { mapel_id: mapel_id },
+                success: function(data) {
+                    let options = '<option value="">-- Pilih Guru Pengawas --</option>';
+                    data.forEach(function(guru) {
+                        options += `<option value="${guru.id}">${guru.nama}</option>`;
+                    });
+                    guruSelect.html(options);
+                }
+            });
+        }
+    });
+
+    // 2. Saat Guru dipilih -> Cari Kelas yang Diajar
+    $('#tambah_guru').on('change', function() {
+        let guru_id = $(this).val();
+        let mapel_id = $('#tambah_mapel').val();
+        let kelasContainer = $('#container_kelas');
+
+        // Pastikan loading berputar saat mencari data
+        kelasContainer.html('<div class="col-12 text-info small text-center"><i class="fas fa-spinner fa-spin me-2"></i> Memuat Kelas...</div>');
+
+        if(guru_id && mapel_id) {
+            $.ajax({
+                url: "{{ route('jadwal.get_kelas') }}",
+                type: "GET",
+                data: { mapel_id: mapel_id, guru_id: guru_id },
+                dataType: "json",
+                success: function(data) {
+                    if(data.length > 0) {
+                        let html = '';
+                        data.forEach(function(kelas) {
+                            html += `
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input border-secondary shadow-sm" type="checkbox" name="kelas_id[]" value="${kelas.id}" id="tambah_kelas_${kelas.id}" checked>
+                                    <label class="form-check-label fw-bold" for="tambah_kelas_${kelas.id}">${kelas.nama_kelas}</label>
+                                </div>
+                            </div>`;
+                        });
+                        kelasContainer.html(html);
+                    } else {
+                        kelasContainer.html('<div class="col-12 text-danger small text-center">Tidak ada kelas yang ditugaskan untuk guru ini pada mapel tersebut.</div>');
+                    }
+                },
+                error: function(xhr) {
+                    // Jika gagal, loading berhenti dan memunculkan notifikasi merah
+                    kelasContainer.html('<div class="col-12 text-danger small text-center fw-bold">Gagal mengambil data kelas! Tekan F12 lalu cek tab Network/Console.</div>');
+                    console.error("Error Detail:", xhr.responseText);
+                }
+            });
+        }
     });
 </script>
 @endsection

@@ -102,7 +102,10 @@
                             <div>
                                 <h5 class="fw-bold">{{ $ujian->mapel->nama_mapel ?? 'Mapel Tidak Diketahui' }} {{ $ujian->judul_ujian != '-' ? '- ' . $ujian->judul_ujian : '' }}</h5>
                                 <p class="mb-0 text-muted small">
-                                    <i class="fas fa-clock me-1"></i> {{ $mulai->format('H:i') }} - {{ $selesai->format('H:i') }} WIB
+                                    <i class="fas fa-calendar-alt text-info me-1"></i> {{ $mulai->isoFormat('dddd, D MMMM YYYY') }}
+                                    <span class="ms-2">
+                                        <i class="fas fa-clock text-warning me-1"></i> {{ $mulai->format('H:i') }} - {{ $selesai->format('H:i') }} WIB
+                                    </span>
                                 </p>
                             </div>
                             

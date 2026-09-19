@@ -13,27 +13,30 @@ class NilaiController extends Controller
 {
     public function index(Request $request)
     {
-        // Query dasar
-        $query = Nilai::with(['siswa', 'mapel', 'jenisUjian']);
-
-        // Filter berdasarkan Kelas (melalui tabel relasi Siswa)
-        if ($request->filled('kelas_id')) {
-            $query->whereHas('siswa', function($q) use ($request) {
-                $q->where('kelas_id', $request->kelas_id);
-            });
-        }
-
-        // Filter berdasarkan Mata Pelajaran
-        if ($request->filled('mapel_id')) {
-            $query->where('mapel_id', $request->mapel_id);
-        }
-
-        $data_nilai = $query->get();
-        
         $data_siswa = Siswa::all();
         $data_mapel = Mapel::all();
         $data_jenis = JenisUjian::all();
-        $data_kelas = Kelas::all(); // Data untuk dropdown filter
+        $data_kelas = Kelas::all(); 
+
+        // Hanya proses pencarian jika admin sudah memilih filter
+        if ($request->filled('kelas_id') || $request->filled('mapel_id')) {
+            $query = Nilai::with(['siswa', 'mapel', 'jenisUjian']);
+
+            if ($request->filled('kelas_id')) {
+                $query->whereHas('siswa', function($q) use ($request) {
+                    $q->where('kelas_id', $request->kelas_id);
+                });
+            }
+
+            if ($request->filled('mapel_id')) {
+                $query->where('mapel_id', $request->mapel_id);
+            }
+
+            $data_nilai = $query->get();
+        } else {
+            // Kosongkan data jika halaman baru saja dibuka
+            $data_nilai = collect(); 
+        }
 
         return view('admin.nilai.index', compact('data_nilai', 'data_siswa', 'data_mapel', 'data_jenis', 'data_kelas'));
     }

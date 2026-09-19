@@ -192,6 +192,33 @@
     </form>
 </div>
 
+
+<!-- ============================================== -->
+<!-- MODAL TAMBAH JENIS UJIAN -->
+<!-- ============================================== -->
+<div class="modal fade" id="modalTambahJenis" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-tags me-2"></i>Tambah Jenis Ujian</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('ujian.jenis.store') }}" method="POST">
+                @csrf
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="fw-bold mb-1">Nama Jenis Ujian <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_jenis" class="form-control" placeholder="Contoh: Sumatif Tengah Semester Genap" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary fw-bold"><i class="fas fa-save me-1"></i> Simpan Jenis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- ============================================== -->
 <!-- MODAL EDIT DAN RESET (DI LUAR FORM HAPUS) -->
 <!-- ============================================== -->
