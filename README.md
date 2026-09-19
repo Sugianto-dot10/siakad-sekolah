@@ -1,4 +1,4 @@
-# 🎓 Sistem Informasi Akademik (SIAKAD) - SMK Mulia Buana
+# Sistem Informasi Akademik (SIAKAD) - SMK Mulia Buana
 
 Aplikasi Sistem Informasi Akademik berbasis web yang dikembangkan khusus untuk mengelola administrasi pendidikan, manajemen ujian, dan rekapitulasi nilai Kurikulum Merdeka di **SMK Mulia Buana**. Dibangun menggunakan *framework* Laravel.
 
